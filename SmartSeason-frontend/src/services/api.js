@@ -1,7 +1,18 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.MODE === 'production' ? 'https://field-monitoring-system.onrender.com/api' : '/api');
+const getApiUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    return envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
+  }
+  // Fallback for production - update this to your Render backend URL
+  if (import.meta.env.MODE === 'production') {
+    return 'https://field-monitoring-system.onrender.com/api';
+  }
+  return '/api';
+};
+
+const API_BASE_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,

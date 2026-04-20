@@ -5,6 +5,8 @@ const authRoutes = require('./routes/auth');
 const fieldRoutes = require('./routes/fields');
 const userRoutes = require('./routes/users');
 const fieldUpdateRoutes = require('./routes/fieldUpdates');
+const checkDatabase = require('./scripts/check-db');
+const initializeDatabase = require('./scripts/init-db');
 
 dotenv.config();
 
@@ -26,6 +28,27 @@ app.get('/', (req, res) => {
   res.json({ message: 'SmartSeason Field Monitoring System API' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Initialize database on startup
+async function startServer() {
+  try {
+    const dbExists = await checkDatabase();
+    
+    if (!dbExists) {
+      console.log('Database not initialized. Running setup...');
+      await initializeDatabase();
+      console.log('Database initialized successfully!');
+    } else {
+      console.log('Database already exists. Skipping initialization.');
+    }
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+    
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

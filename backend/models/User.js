@@ -11,9 +11,12 @@ class User {
     const values = [username, email, password_hash, role];
     
     try {
+      console.log('Creating user with data:', { username, email, role });
       const result = await pool.query(query, values);
+      console.log('User created successfully:', result.rows[0]);
       return result.rows[0];
     } catch (error) {
+      console.error('Error creating user:', error);
       throw error;
     }
   }
@@ -22,9 +25,12 @@ class User {
     const query = 'SELECT * FROM users WHERE email = $1';
     
     try {
+      console.log('Finding user by email:', email);
       const result = await pool.query(query, [email]);
+      console.log('User found:', result.rows[0] ? 'yes' : 'no');
       return result.rows[0];
     } catch (error) {
+      console.error('Error finding user by email:', error);
       throw error;
     }
   }

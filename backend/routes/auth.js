@@ -11,17 +11,22 @@ router.post('/register', async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
 
+    console.log('Registration attempt:', { username, email, role });
+
     // Validate input
     if (!username || !email || !password || !role) {
+      console.log('Validation failed: missing fields');
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     if (!['admin', 'field_agent'].includes(role)) {
+      console.log('Validation failed: invalid role', role);
       return res.status(400).json({ message: 'Invalid role' });
     }
 
     // Check if user already exists
     const existingUser = await User.findByEmail(email);
+    console.log('Existing user check:', existingUser);
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -29,6 +34,7 @@ router.post('/register', async (req, res) => {
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
+    console.log('Password hashed successfully');
 
     // Create user
     const user = await User.create({
@@ -37,8 +43,13 @@ router.post('/register', async (req, res) => {
       password_hash,
       role
     });
+    console.log('User created:', user);
 
     // Create JWT token
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not defined!');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,

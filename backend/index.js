@@ -31,7 +31,12 @@ app.get('/', (req, res) => {
 // Initialize database on startup
 async function startServer() {
   try {
+    console.log('Starting server, checking database...');
+    console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'set' : 'NOT SET');
+    console.log('DB_HOST:', process.env.DB_HOST);
+    
     const dbExists = await checkDatabase();
+    console.log('Database exists check result:', dbExists);
     
     if (!dbExists) {
       console.log('Database not initialized. Running setup...');

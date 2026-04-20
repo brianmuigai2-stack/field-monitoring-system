@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.MODE === 'production' ? 'https://field-monitoring-system.onrender.com/api' : '/api');
 
 const api = axios.create({
   baseURL: API_BASE_URL,

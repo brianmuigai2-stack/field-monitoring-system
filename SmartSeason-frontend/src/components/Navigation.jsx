@@ -28,7 +28,6 @@ const Navigation = () => {
   const isActive = (path) => location.pathname === path;
 
   const navigation = [
-    { name: 'Home', href: '/dashboard', icon: Home },
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Fields', href: '/fields', icon: Sprout },
     { name: 'Updates', href: '/updates', icon: RefreshCw },

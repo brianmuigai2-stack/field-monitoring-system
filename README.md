@@ -215,13 +215,83 @@ The application includes:
 
 ## Deployment
 
-For production deployment:
-1. Set up PostgreSQL database on cloud service
-2. Configure environment variables for production
-3. Build frontend: `npm run build`
-4. Deploy backend to Node.js hosting service
-5. Set up reverse proxy (nginx) for frontend serving
-6. Configure SSL certificates for HTTPS
+### Option 1: Deploy to Vercel (Frontend) + Render (Backend)
+
+#### Backend Deployment (Render/Railway)
+
+1. Push your code to GitHub
+2. Create a new Web Service on [Render](https://render.com/) or [Railway](https://railway.app/)
+3. Connect your GitHub repository
+4. Configure the following:
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Environment Variables**:
+     ```
+     PORT=5000
+     DB_HOST=your-postgres-host
+     DB_PORT=5432
+     DB_NAME=smartseason
+     DB_USER=your-db-user
+     DB_PASSWORD=your-db-password
+     JWT_SECRET=your-secure-secret-key
+     ```
+5. Create a PostgreSQL database on the same platform
+6. Run the database schema:
+   ```sql
+   -- Create tables (see backend/database/init.sql)
+   ```
+
+#### Frontend Deployment (Vercel)
+
+1. Install Vercel CLI: `npm i -g vercel`
+2. Or deploy directly from [Vercel](https://vercel.com/)
+3. Configure environment variable:
+   ```
+   VITE_API_URL=https://your-backend-url.onrender.com/api
+   ```
+4. For production, update `src/services/api.js` to use the production API URL
+
+#### Alternative: Deploy Both on Render
+
+1. Create a Render account
+2. Deploy backend as a Web Service
+3. Deploy frontend as a Static Site with publish directory as `dist`
+4. Add redirect rule for SPA: `/` → `/index.html`
+
+### Option 2: Docker Deployment
+
+Create a `Dockerfile` in the root:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY backend/package*.json ./backend/
+COPY SmartSeason-frontend/package*.json ./SmartSeason-frontend/
+
+RUN cd backend && npm install
+RUN cd SmartSeason-frontend && npm install
+
+# Copy source code
+COPY . .
+
+# Build frontend
+RUN cd SmartSeason-frontend && npm run build
+
+# Expose ports
+EXPOSE 5000
+
+# Start backend
+CMD ["cd", "backend", "npm", "start"]
+```
+
+### Quick Deploy Links
+
+- **Vercel Frontend**: Deploy directly from GitHub
+- **Render Backend**: https://render.com/docs/deploy-node-express
+- **Railway**: https://railway.app/
 
 ## Support
 

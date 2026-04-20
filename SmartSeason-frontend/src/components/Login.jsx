@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Leaf, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Leaf, User, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -50,6 +50,12 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
+        <div className="mb-6">
+          <Link to="/" className="inline-flex items-center text-green-600 hover:text-green-700">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Home
+          </Link>
+        </div>
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="flex items-center justify-center mb-8">
             <Leaf className="h-10 w-10 text-green-600 mr-2" />

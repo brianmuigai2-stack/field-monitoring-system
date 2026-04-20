@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import Landing from './components/Landing';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Fields from './components/Fields';
@@ -15,6 +16,7 @@ function App() {
       <Router>
         <div className="min-h-screen bg-gray-50">
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/*" element={<ProtectedRoute><Layout /></ProtectedRoute>} />
           </Routes>
@@ -26,7 +28,7 @@ function App() {
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" replace />;
+  return token ? children : <Navigate to="/" replace />;
 };
 
 const Layout = () => {

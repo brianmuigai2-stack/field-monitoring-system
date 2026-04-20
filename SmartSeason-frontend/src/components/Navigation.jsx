@@ -15,16 +15,20 @@ import {
 const Navigation = () => {
   const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    window.location.href = '/';
+  };
+
+  const handleHome = () => {
+    window.location.href = '/';
   };
 
   const isActive = (path) => location.pathname === path;
 
   const navigation = [
+    { name: 'Home', href: '/dashboard', icon: Home },
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Fields', href: '/fields', icon: Sprout },
     { name: 'Updates', href: '/updates', icon: RefreshCw },
@@ -39,7 +43,7 @@ const Navigation = () => {
   return (
     <div className="w-64 bg-white shadow-lg h-screen sticky top-0">
       <div className="p-6">
-        <div className="flex items-center mb-8">
+        <div className="flex items-center mb-8 cursor-pointer" onClick={handleHome}>
           <Leaf className="h-8 w-8 text-green-600 mr-3" />
           <div>
             <h1 className="text-xl font-bold text-gray-900">SmartSeason</h1>

@@ -24,10 +24,15 @@ SmartSeason helps agricultural coordinators and field agents monitor crop develo
 - **Update History**: Complete audit trail of all field changes
 
 ### Status Logic
-The system automatically calculates field status based on:
-- **Active**: Fields progressing normally through growth stages
-- **At Risk**: Fields stuck in a stage too long (e.g., planted >30 days, growing >120 days)
-- **Completed**: Fields that have been harvested
+The system automatically calculates field status based on days since planting:
+
+| Stage | Threshold | Status |
+|-------|-----------|--------|
+| Planted | > 30 days | At Risk |
+| Growing | > 120 days | At Risk |
+| Ready | > 150 days | At Risk |
+| Harvested | Any | Completed |
+| Other | Normal | Active |
 
 ### Dashboard Analytics
 - **Admin View**: Overview of all fields, agent assignments, and system statistics
@@ -67,8 +72,8 @@ Field_Updates (id, field_id, agent_id, stage, notes, update_date)
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd technical-assessment
+git clone git@github.com:brianmuigai2-stack/field-monitoring-system.git
+cd field-monitoring-system
 
 # Install backend dependencies
 cd backend
@@ -187,7 +192,18 @@ This approach provides automated risk detection while allowing manual interventi
 
 ## Assumptions Made
 
-1. **Time-Based Status**: The risk assessment logic assumes typical crop growth timelines. These thresholds can be adjusted based on specific crop requirements.
+### At-Risk Status Rules
+The system automatically calculates field status based on days since planting date:
+
+| Stage | Days Since Planting | Status | Reason |
+|-------|----------------|--------|-------|
+| Planted | > 30 days | At Risk | Not progressing to growing stage |
+| Growing | > 120 days | At Risk | Taking too long to mature |
+| Ready | > 150 days | At Risk | Should be harvested |
+| Harvested | Any | Completed | Final state |
+| Any (normal) | Within threshold | Active | Normal progression |
+
+1. **Time-Based Status**: The risk assessment logic assumes typical crop growth timelines. These thresholds can be adjusted based on specific crop requirements in `backend/routes/fields.js`.
 
 2. **Single Agent Assignment**: Each field is assigned to exactly one field agent for clear responsibility.
 

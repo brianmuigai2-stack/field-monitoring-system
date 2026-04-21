@@ -129,10 +129,13 @@ const Fields = () => {
 
   const handleEdit = (field) => {
     setSelectedField(field);
+    const plantingDate = field.planting_date 
+      ? new Date(field.planting_date).toISOString().split('T')[0]
+      : '';
     setFormData({
       name: field.name,
       crop_type: field.crop_type,
-      planting_date: field.planting_date,
+      planting_date: plantingDate,
       current_stage: field.current_stage,
       assigned_agent_id: field.assigned_agent_id || ''
     });

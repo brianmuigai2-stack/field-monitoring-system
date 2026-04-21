@@ -37,9 +37,10 @@ class FieldUpdate {
 
   static async getByAgentId(agentId) {
     const query = `
-      SELECT fu.*, f.name as field_name 
+      SELECT fu.*, f.name as field_name, u.username as agent_name
       FROM field_updates fu 
       JOIN fields f ON fu.field_id = f.id 
+      JOIN users u ON fu.agent_id = u.id
       WHERE fu.agent_id = $1 
       ORDER BY fu.update_date DESC
     `;

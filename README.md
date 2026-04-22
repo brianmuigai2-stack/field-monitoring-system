@@ -96,6 +96,16 @@ psql -d smartseason -f backend/database/init.sql
 
 ### 3. Environment Configuration
 
+Copy the example environment files and configure them:
+
+```bash
+# Backend
+cp .env.example backend/.env
+
+# Frontend  
+cp SmartSeason-frontend/.env.example SmartSeason-frontend/.env
+```
+
 Create a `.env` file in the `backend` directory:
 
 ```env

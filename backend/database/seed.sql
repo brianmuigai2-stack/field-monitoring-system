@@ -29,7 +29,7 @@ ON CONFLICT (username) DO UPDATE
 
 -- Upsert seeded fields; look up agent IDs by username for robustness
 INSERT INTO fields (name, crop_type, planting_date, current_stage, status, assigned_agent_id)
-SELECT v.name, v.crop_type, v.planting_date, v.current_stage, v.status, v.assigned_agent_id
+SELECT v.name, v.crop_type, v.planting_date::DATE, v.current_stage, v.status, v.assigned_agent_id
 FROM (VALUES
   ('North Field', 'Corn',   '2024-03-15', 'growing',  'active',  (SELECT id FROM users WHERE username = 'agent1')),
   ('South Field', 'Wheat',  '2024-03-20', 'ready',    'active',  (SELECT id FROM users WHERE username = 'agent1')),

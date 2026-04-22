@@ -1,4 +1,5 @@
 -- Create database schema for SmartSeason Field Monitoring System
+-- Note: This file contains only DDL (table creation). Seed data is in seed.sql
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
@@ -38,18 +39,3 @@ CREATE TABLE IF NOT EXISTS field_updates (
 CREATE INDEX IF NOT EXISTS idx_fields_agent_id ON fields(assigned_agent_id);
 CREATE INDEX IF NOT EXISTS idx_field_updates_field_id ON field_updates(field_id);
 CREATE INDEX IF NOT EXISTS idx_field_updates_agent_id ON field_updates(agent_id);
-
--- Insert sample data for testing
-INSERT INTO users (username, email, password_hash, role) VALUES
-('admin', 'admin@smartseason.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-('agent1', 'agent1@smartseason.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'field_agent'),
-('agent2', 'agent2@smartseason.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'field_agent')
-ON CONFLICT (username) DO NOTHING;
-
--- Insert sample fields
-INSERT INTO fields (name, crop_type, planting_date, current_stage, status, assigned_agent_id) VALUES
-('North Field', 'Corn', '2024-03-15', 'growing', 'active', 2),
-('South Field', 'Wheat', '2024-03-20', 'ready', 'active', 2),
-('East Field', 'Soybeans', '2024-03-10', 'harvested', 'completed', 3),
-('West Field', 'Corn', '2024-04-01', 'planted', 'at_risk', 3)
-ON CONFLICT DO NOTHING;

@@ -15,27 +15,43 @@ async function initializeDatabase() {
   try {
     console.log('Initializing database...');
     
-    // Read the SQL file
-    const sqlPath = path.join(__dirname, '../database/init.sql');
-    const sql = fs.readFileSync(sqlPath, 'utf8');
+    // Step 1: Create/update tables (DDL only)
+    console.log('Step 1: Creating/updating tables...');
+    const initSqlPath = path.join(__dirname, '../database/init.sql');
+    const initSql = fs.readFileSync(initSqlPath, 'utf8');
+    await pool.query(initSql);
+    console.log('✓ Tables ready');
     
-    // Execute the SQL
-    await pool.query(sql);
-    
-    // Run migrations
-    console.log('Running database migrations...');
+    // Step 2: Run migrations (adds missing columns to existing tables)
+    console.log('Step 2: Running migrations...');
     const migrationsPath = path.join(__dirname, '../database/migrations');
-    const migrationFiles = fs.readdirSync(migrationsPath)
-      .filter(file => file.endsWith('.sql'))
-      .sort(); // Sort to run in order
-    
-    for (const migration of migrationFiles) {
-      console.log(`Applying migration: ${migration}`);
-      const migrationSql = fs.readFileSync(path.join(migrationsPath, migration), 'utf8');
-      await pool.query(migrationSql);
+    if (fs.existsSync(migrationsPath)) {
+      const migrationFiles = fs.readdirSync(migrationsPath)
+        .filter(file => file.endsWith('.sql'))
+        .sort();
+      
+      for (const migration of migrationFiles) {
+        console.log(`Applying migration: ${migration}`);
+        const migrationSql = fs.readFileSync(path.join(migrationsPath, migration), 'utf8');
+        await pool.query(migrationSql);
+      }
+      console.log('✓ Migrations completed');
+    } else {
+      console.log('No migrations directory found');
     }
     
-    console.log('Database initialized successfully!');
+    // Step 3: Seed data (only if empty)
+    console.log('Step 3: Seeding initial data...');
+    const seedSqlPath = path.join(__dirname, '../database/seed.sql');
+    if (fs.existsSync(seedSqlPath)) {
+      const seedSql = fs.readFileSync(seedSqlPath, 'utf8');
+      await pool.query(seedSql);
+      console.log('✓ Seed data inserted');
+    } else {
+      console.log('No seed file found');
+    }
+    
+    console.log('Database initialization completed successfully!');
     
   } catch (error) {
     console.error('Error initializing database:', error);

@@ -2,8 +2,7 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-async function initializeDatabase() {
-  // Use DATABASE_URL if available (Render provides this), otherwise use individual vars
+async function runMigrations() {
   const connectionString = process.env.DATABASE_URL || 
     `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
   
@@ -13,49 +12,43 @@ async function initializeDatabase() {
   });
 
   try {
-    console.log('Initializing database...');
-    
-    // Read the SQL file
-    const sqlPath = path.join(__dirname, '../database/init.sql');
-    const sql = fs.readFileSync(sqlPath, 'utf8');
-    
-    // Execute the SQL
-    await pool.query(sql);
-    
-    // Run migrations
     console.log('Running database migrations...');
+    
     const migrationsPath = path.join(__dirname, '../database/migrations');
     const migrationFiles = fs.readdirSync(migrationsPath)
       .filter(file => file.endsWith('.sql'))
-      .sort(); // Sort to run in order
-    
+      .sort();
+
+    if (migrationFiles.length === 0) {
+      console.log('No migrations found.');
+      return;
+    }
+
     for (const migration of migrationFiles) {
       console.log(`Applying migration: ${migration}`);
       const migrationSql = fs.readFileSync(path.join(migrationsPath, migration), 'utf8');
       await pool.query(migrationSql);
+      console.log(`✓ ${migration} applied successfully`);
     }
     
-    console.log('Database initialized successfully!');
+    console.log('All migrations completed!');
     
   } catch (error) {
-    console.error('Error initializing database:', error);
+    console.error('Migration error:', error);
     throw error;
   } finally {
     await pool.end();
   }
 }
 
-// Run initialization if this file is executed directly
 if (require.main === module) {
-  initializeDatabase()
+  runMigrations()
     .then(() => {
-      console.log('Database setup completed');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('Database setup failed:', error);
       process.exit(1);
     });
 }
 
-module.exports = initializeDatabase;
+module.exports = runMigrations;

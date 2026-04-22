@@ -14,7 +14,7 @@ async function checkDatabase() {
     console.log('Checking database connection...');
     
     // Check if users table exists
-    const result = await pool.query(`
+    const tableResult = await pool.query(`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_schema = 'public' 
@@ -22,20 +22,40 @@ async function checkDatabase() {
       );
     `);
     
-    const tableExists = result.rows[0].exists;
+    const tableExists = tableResult.rows[0].exists;
     
-    if (tableExists) {
-      console.log('Database tables already exist');
-      
-      // Check if there's data
-      const userCount = await pool.query('SELECT COUNT(*) FROM users');
-      console.log(`Found ${userCount.rows[0].count} users in database`);
-      
-      return true;
-    } else {
-      console.log('Database tables do not exist');
+    if (!tableExists) {
+      console.log('Users table does not exist');
       return false;
     }
+    
+    console.log('✓ Users table exists');
+    
+    // Check if password_hash column exists
+    const columnResult = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'users' 
+        AND column_name = 'password_hash'
+      );
+    `);
+    
+    const columnExists = columnResult.rows[0].exists;
+    
+    if (!columnExists) {
+      console.log('✗ Missing required column: password_hash');
+      console.log('Run: npm run migrate to add missing columns');
+      return false;
+    }
+    
+    console.log('✓ password_hash column exists');
+    
+    // Check if there's data
+    const userCount = await pool.query('SELECT COUNT(*) FROM users');
+    console.log(`Found ${userCount.rows[0].count} users in database`);
+    
+    return true;
     
   } catch (error) {
     console.error('Error checking database:', error);

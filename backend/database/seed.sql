@@ -1,7 +1,22 @@
 -- Seed data for testing/development
 -- Uses UPSERT to ensure seeded users have correct credentials/roles
 
--- Upsert seeded users
+-- First, ensure password_hash column exists and is properly configured
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'users' AND column_name = 'password_hash'
+  ) THEN
+    ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT '';
+  END IF;
+  
+  -- Clean up any null password hashes
+  UPDATE users SET password_hash = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi' 
+  WHERE password_hash IS NULL OR password_hash = '';
+END $$;
+
+-- Upsert seeded users with explicit column handling
 INSERT INTO users (username, email, password_hash, role)
 VALUES 
   ('admin', 'admin@smartseason.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),

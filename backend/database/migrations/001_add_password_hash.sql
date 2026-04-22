@@ -1,10 +1,7 @@
--- Add missing password_hash column if it doesn't exist
-ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
-
--- Handle case where column might be named hashed_password instead
+-- Comprehensive password column migration
 DO $$
 BEGIN
-  -- Check if hashed_password column exists and password_hash doesn't
+  -- Case 1: Only hashed_password exists, rename it to password_hash
   IF EXISTS (
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'users' AND column_name = 'hashed_password'
@@ -12,12 +9,31 @@ BEGIN
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'users' AND column_name = 'password_hash'
   ) THEN
-    -- Rename hashed_password to password_hash
     ALTER TABLE users RENAME COLUMN hashed_password TO password_hash;
+  END IF;
+  
+  -- Case 2: Both columns exist, copy data from hashed_password to password_hash then drop hashed_password
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'users' AND column_name = 'hashed_password'
+  ) AND EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'users' AND column_name = 'password_hash'
+  ) THEN
+    UPDATE users SET password_hash = hashed_password WHERE password_hash IS NULL OR password_hash = '';
+    ALTER TABLE users DROP COLUMN hashed_password;
+  END IF;
+  
+  -- Case 3: Neither exists, add password_hash
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'users' AND column_name = 'password_hash'
+  ) THEN
+    ALTER TABLE users ADD COLUMN password_hash VARCHAR(255);
   END IF;
 END $$;
 
--- Ensure password_hash column is NOT NULL and has a default if it's still nullable
+-- Ensure password_hash column is properly configured
 ALTER TABLE users ALTER COLUMN password_hash SET NOT NULL;
 ALTER TABLE users ALTER COLUMN password_hash SET DEFAULT '';
 

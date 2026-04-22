@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import { 
   Plus, 
   Edit, 
@@ -41,20 +42,10 @@ const Fields = () => {
 
   const fetchFields = async () => {
     try {
-      const response = await fetch('/api/fields', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch fields');
-      }
-      
-      const data = await response.json();
-      setFields(data);
+      const response = await api.get('/fields');
+      setFields(response.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to fetch fields');
     } finally {
       setLoading(false);
     }
@@ -62,16 +53,8 @@ const Fields = () => {
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch('/api/users/agents', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setAgents(data);
-      }
+      const response = await api.get('/users/agents');
+      setAgents(response.data);
     } catch (err) {
       console.error('Failed to fetch agents:', err);
     }
@@ -80,29 +63,16 @@ const Fields = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = showEditModal ? 
-        `/api/fields/${selectedField.id}` : 
-        '/api/fields';
-      
-      const method = showEditModal ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to save field');
+      if (showEditModal) {
+        await api.put(`/fields/${selectedField.id}`, formData);
+      } else {
+        await api.post('/fields', formData);
       }
       
       await fetchFields();
       handleCloseModal();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to save field');
     }
   };
 
@@ -110,20 +80,10 @@ const Fields = () => {
     if (!confirm('Are you sure you want to delete this field?')) return;
     
     try {
-      const response = await fetch(`/api/fields/${fieldId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete field');
-      }
-      
+      await api.delete(`/fields/${fieldId}`);
       await fetchFields();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to delete field');
     }
   };
 

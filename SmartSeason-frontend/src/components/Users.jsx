@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import { Users as UsersIcon, Plus, Trash2, User, Mail } from 'lucide-react';
 
 const Users = () => {
@@ -21,20 +22,10 @@ const Users = () => {
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch('/api/users/agents', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch agents');
-      }
-      
-      const data = await response.json();
-      setAgents(data);
+      const response = await api.get('/users/agents');
+      setAgents(response.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to fetch agents');
     } finally {
       setLoading(false);
     }
@@ -43,25 +34,12 @@ const Users = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to create agent');
-      }
-      
+      await api.post('/auth/register', formData);
       await fetchAgents();
       setShowCreateModal(false);
       setFormData({ username: '', email: '', password: '', role: 'field_agent' });
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || 'Failed to create agent');
     }
   };
 
@@ -69,16 +47,10 @@ const Users = () => {
     if (!confirm('Are you sure you want to delete this agent?')) return;
     
     try {
-      await fetch(`/api/users/${agentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
+      await api.delete(`/users/${agentId}`);
       await fetchAgents();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to delete agent');
     }
   };
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import { 
   RefreshCw, 
   Plus, 
@@ -34,23 +35,13 @@ const FieldUpdates = () => {
   const fetchUpdates = async () => {
     try {
       const url = isAdmin ? 
-        '/api/field-updates/recent' : 
-        `/api/fields/updates/agent/${user.id}`;
+        '/field-updates/recent' : 
+        `/fields/updates/agent/${user.id}`;
       
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch updates');
-      }
-      
-      const data = await response.json();
-      setUpdates(data);
+      const response = await api.get(url);
+      setUpdates(response.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to fetch updates');
     } finally {
       setLoading(false);
     }
@@ -58,18 +49,8 @@ const FieldUpdates = () => {
 
   const fetchFields = async () => {
     try {
-      const url = '/api/fields';
-      
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setFields(data);
-      }
+      const response = await api.get('/fields');
+      setFields(response.data);
     } catch (err) {
       console.error('Failed to fetch fields:', err);
     }
@@ -78,27 +59,16 @@ const FieldUpdates = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/fields/${formData.field_id}/stage`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          stage: formData.stage,
-          notes: formData.notes
-        })
+      await api.put(`/fields/${formData.field_id}/stage`, {
+        stage: formData.stage,
+        notes: formData.notes
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update field');
-      }
       
       await fetchUpdates();
       await fetchFields();
       handleCloseModal();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to update field');
     }
   };
 

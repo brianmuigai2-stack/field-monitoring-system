@@ -1,5 +1,25 @@
--- Add missing password_hash column
-ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255) NOT NULL DEFAULT '';
+-- Add missing password_hash column if it doesn't exist
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
+
+-- Handle case where column might be named hashed_password instead
+DO $$
+BEGIN
+  -- Check if hashed_password column exists and password_hash doesn't
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'users' AND column_name = 'hashed_password'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'users' AND column_name = 'password_hash'
+  ) THEN
+    -- Rename hashed_password to password_hash
+    ALTER TABLE users RENAME COLUMN hashed_password TO password_hash;
+  END IF;
+END $$;
+
+-- Ensure password_hash column is NOT NULL and has a default if it's still nullable
+ALTER TABLE users ALTER COLUMN password_hash SET NOT NULL;
+ALTER TABLE users ALTER COLUMN password_hash SET DEFAULT '';
 
 -- Convert enum-based role to VARCHAR if needed
 DO $$

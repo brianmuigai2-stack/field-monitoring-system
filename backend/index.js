@@ -8,7 +8,6 @@ const authRoutes = require('./routes/auth');
 const fieldRoutes = require('./routes/fields');
 const userRoutes = require('./routes/users');
 const fieldUpdateRoutes = require('./routes/fieldUpdates');
-const checkDatabase = require('./scripts/check-db');
 const initializeDatabase = require('./scripts/init-db');
 
 const app = express();
@@ -47,22 +46,14 @@ app.get('/test-db', async (req, res) => {
 
 async function startServer() {
   try {
-    console.log('Starting server, checking database...');
+    console.log('Starting server, initializing database...');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'set' : 'NOT SET');
     console.log('DB_HOST:', process.env.DB_HOST);
     console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'set' : 'NOT SET');
     
-    const dbExists = await checkDatabase();
-    console.log('Database exists check result:', dbExists);
-    
-    if (!dbExists) {
-      console.log('Database not initialized. Running setup...');
-      await initializeDatabase();
-      console.log('Database initialized successfully!');
-    } else {
-      console.log('Database already exists. Skipping initialization.');
-    }
+    // Always initialize (idempotent: creates tables if needed, runs migrations, seeds data)
+    await initializeDatabase();
     
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

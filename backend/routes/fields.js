@@ -48,6 +48,23 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// Get field statistics
+router.get('/stats/dashboard', auth, async (req, res) => {
+  try {
+    let stats;
+    if (req.user.role === 'admin') {
+      stats = await Field.getStats();
+    } else {
+      stats = await Field.getStatsByAgent(req.user.id);
+    }
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Get field stats error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get field by ID
 router.get('/:id', auth, async (req, res) => {
   try {
@@ -239,23 +256,6 @@ router.get('/updates/agent/:agentId', auth, async (req, res) => {
     res.json(updates);
   } catch (error) {
     console.error('Get agent updates error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get field statistics
-router.get('/stats/dashboard', auth, async (req, res) => {
-  try {
-    let stats;
-    if (req.user.role === 'admin') {
-      stats = await Field.getStats();
-    } else {
-      stats = await Field.getStatsByAgent(req.user.id);
-    }
-    
-    res.json(stats);
-  } catch (error) {
-    console.error('Get field stats error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
